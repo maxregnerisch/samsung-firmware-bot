@@ -1,0 +1,45 @@
+name: DeepSeek Code Enhancement
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sundays
+  push:
+    branches:
+      - main
+    paths:
+      - '**.py'
+      - '!enhancements/**'
+
+jobs:
+  enhance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Run DeepSeek Enhancement
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          mkdir -p enhancements
+          python .github/deepseek_enhancer.py
+
+      - name: Create Enhancement PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: Apply DeepSeek enhancements for OneUI 8"
+          title: "🤖 Code Optimizations for OneUI 8 Compatibility"
+          body: "Automated code improvements from DeepSeek API including:\n- OneUI 8 compatibility updates\n- Performance optimizations\n- Code quality improvements"
+          branch: "enhancement/deepseek-oneui8"
+          base: main
