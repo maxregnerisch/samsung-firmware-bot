@@ -17,14 +17,21 @@ from samfirm_bot import PARENT_DIR, TG_LOGGER, WORK_DIR
 class SamFirm:
     """ SamFirm wrapper """
 
-    def __init__(self, loop):
+    def __init__(self, loop=None):
         self.prefix = f"WINEDEBUG=fixme-all,err-all wine {PARENT_DIR}/SamFirm/SamFirm.exe"
         self.loop = loop
         self.session = aiohttp.ClientSession()
         self.regions = self.load_regions()
         self.devices = self.load_devices()
         self.models = []
-        self.loop.create_task(self.models_loop())
+        
+        # Only create the task if we have a loop
+        if self.loop:
+            try:
+                self.loop.create_task(self.models_loop())
+            except Exception as e:
+                TG_LOGGER.warning(f"Could not create models_loop task: {e}")
+        
         self.download_dir = f"{PARENT_DIR}/SamFirm/downloads"
 
     @staticmethod

@@ -19,16 +19,11 @@ try:
     BOT.parse_mode = 'markdown'
     BOT_INFO = {}
     
-    # Handle different Telethon versions for loop access
-    try:
-        # For newer Telethon versions
-        loop = asyncio.get_event_loop()
-        SAM_FIRM = SamFirm(loop)
-    except AttributeError:
-        # For older Telethon versions
-        SAM_FIRM = SamFirm(BOT.loop)
-    
+    # Initialize storage (doesn't need event loop)
     STORAGE = LocalClient(LOCAL_STORAGE, WEB_STORAGE)
+    
+    # Initialize SamFirm without loop initially - it will be set up later
+    SAM_FIRM = SamFirm()
     
 except Exception as e:
     print(f"❌ Error initializing bot: {e}")
@@ -47,6 +42,19 @@ def main():
 
 async def run():
     """Run the bot."""
+    global SAM_FIRM
+    
+    # Set the event loop on the existing SamFirm instance
+    try:
+        loop = asyncio.get_running_loop()
+        SAM_FIRM.loop = loop
+        # Now create the models_loop task
+        if hasattr(SAM_FIRM, 'models_loop'):
+            SAM_FIRM.loop.create_task(SAM_FIRM.models_loop())
+        TG_LOGGER.info("SamFirm event loop initialized successfully")
+    except Exception as e:
+        TG_LOGGER.warning(f"Could not set SamFirm event loop: {e}")
+    
     bot_info = await BOT.get_me()
     BOT_INFO.update({'name': bot_info.first_name,
                      'username': bot_info.username, 'id': bot_info.id})
