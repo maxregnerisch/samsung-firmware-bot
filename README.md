@@ -57,8 +57,24 @@ cp config.json.example config.json
 # Edit config.json with your credentials
 ```
 
-4. **Run the bot**:
+4. **Configure credentials**:
 ```bash
+# Option 1: Edit config.json (recommended)
+cp config.json.example config.json
+# Edit config.json with your Telegram credentials
+
+# Option 2: Use environment variables
+export TELEGRAM_API_ID="your_api_id"
+export TELEGRAM_API_HASH="your_api_hash"
+export TELEGRAM_BOT_TOKEN="your_bot_token"
+```
+
+5. **Run the bot**:
+```bash
+# Using the startup script (recommended)
+python start_bot.py
+
+# Or directly
 python -m samfirm_bot
 ```
 
@@ -181,6 +197,52 @@ export TELEGRAM_BOT_TOKEN="your_bot_token"
 - Secure file handling
 - Temporary file cleanup
 - Error handling and logging
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### ❌ JSON Configuration Error
+```
+json.decoder.JSONDecodeError: Expecting value: line 1 column 2 (char 1)
+```
+**Solution:**
+1. Ensure `config.json` exists and has valid JSON format
+2. Copy from example: `cp config.json.example config.json`
+3. Fill in your credentials or use environment variables
+
+#### ❌ Missing Telegram Credentials
+```
+Error: Missing required Telegram credentials!
+```
+**Solution:**
+1. Get API credentials from https://my.telegram.org/apps
+2. Create a bot with @BotFather on Telegram
+3. Add credentials to `config.json` or set environment variables
+
+#### ❌ Import Errors
+```
+ModuleNotFoundError: No module named 'telethon'
+```
+**Solution:**
+```bash
+pip install -r requirements.txt
+```
+
+#### ❌ Permission Errors
+```
+PermissionError: [Errno 13] Permission denied
+```
+**Solution:**
+```bash
+chmod +x setup.sh start_bot.py
+mkdir -p storage temp logs
+```
+
+### Getting Help
+- Use `python start_bot.py` for user-friendly startup with error checking
+- Check logs in the `logs/` directory
+- Join our support group: @SamsungFirmwareSupport
 
 ## 🤝 Contributing
 

@@ -2,26 +2,60 @@
 import json
 import logging
 import sys
-from os.path import dirname
+import os
+from os.path import dirname, exists
 
 WORK_DIR = dirname(__file__)
 PARENT_DIR = '/'.join(dirname(__file__).split('/')[:-1])
 
-# read bog config
-with open(f'{PARENT_DIR}/config.json', 'r') as f:
-    CONFIG = json.load(f)
-API_KEY = CONFIG['api_key']
-API_HASH = CONFIG['api_hash']
-BOT_TOKEN = CONFIG['tg_bot_token']
+# Default configuration
+DEFAULT_CONFIG = {
+    'tg_bot_token': '',
+    'tg_bot_id': 0,
+    'api_key': 0,
+    'api_hash': '',
+    'tg_bot_admins': [],
+    'tg_channel': '@SamsungFirmwareSupport',
+    'local_storage_path': './storage',
+    'web_storage': 'http://localhost:8080'
+}
+
+# Load configuration with fallbacks
+CONFIG = DEFAULT_CONFIG.copy()
+config_path = f'{PARENT_DIR}/config.json'
+
+if exists(config_path):
+    try:
+        with open(config_path, 'r') as f:
+            file_config = json.load(f)
+            CONFIG.update(file_config)
+    except (json.JSONDecodeError, FileNotFoundError) as e:
+        print(f"Warning: Could not load config.json: {e}")
+        print("Using default configuration and environment variables")
+
+# Environment variable fallbacks
+API_KEY = int(os.getenv('TELEGRAM_API_ID', CONFIG['api_key'])) if os.getenv('TELEGRAM_API_ID') else CONFIG['api_key']
+API_HASH = os.getenv('TELEGRAM_API_HASH', CONFIG['api_hash'])
+BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', CONFIG['tg_bot_token'])
 BOT_ID = CONFIG['tg_bot_id']
 TG_BOT_ADMINS = CONFIG['tg_bot_admins']
 TG_CHANNEL = CONFIG['tg_channel']
-# PROJECT = CONFIG['sf_project']
-# SFTP_USER = CONFIG['sf_user']
-# SFTP_PASS = CONFIG['sf_pass']
-# SFTP_KEY = CONFIG['sf_key']
-LOCAL_STORAGE = CONFIG['local_storage_path']
-WEB_STORAGE = CONFIG['web_storage']
+LOCAL_STORAGE = os.getenv('LOCAL_STORAGE', CONFIG['local_storage_path'])
+WEB_STORAGE = os.getenv('WEB_STORAGE', CONFIG['web_storage'])
+
+# Validate required configuration
+if not API_KEY or not API_HASH or not BOT_TOKEN:
+    print("❌ Error: Missing required Telegram credentials!")
+    print("Please set the following:")
+    print("1. Edit config.json with your credentials, OR")
+    print("2. Set environment variables:")
+    print("   - TELEGRAM_API_ID")
+    print("   - TELEGRAM_API_HASH") 
+    print("   - TELEGRAM_BOT_TOKEN")
+    print("\nGet credentials from:")
+    print("- API credentials: https://my.telegram.org/apps")
+    print("- Bot token: @BotFather on Telegram")
+    sys.exit(1)
 
 # set logging
 FORMATTER = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s'
