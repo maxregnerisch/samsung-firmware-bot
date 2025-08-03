@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  samsung-firmware-bot:
+    build: .
+    container_name: samsung-firmware-bot
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_API_ID=${TELEGRAM_API_ID}
+      - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - LOCAL_STORAGE=/app/storage
+      - WEB_STORAGE=${WEB_STORAGE:-http://localhost:8080}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+      - ./temp:/app/temp
+    ports:
+      - "8080:8080"
+    networks:
+      - bot-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Redis for session storage (for production)
+  redis:
+    image: redis:7-alpine
+    container_name: samsung-firmware-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - bot-network
+    command: redis-server --appendonly yes
+
+  # Optional: Nginx for file serving
+  nginx:
+    image: nginx:alpine
+    container_name: samsung-firmware-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./storage:/usr/share/nginx/html/storage:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - bot-network
+    depends_on:
+      - samsung-firmware-bot
+
+volumes:
+  redis_data:
+
+networks:
+  bot-network:
+    driver: bridge
+
