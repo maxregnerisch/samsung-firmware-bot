@@ -11,7 +11,6 @@ PARENT_DIR = '/'.join(dirname(__file__).split('/')[:-1])
 # Default configuration
 DEFAULT_CONFIG = {
     'tg_bot_token': '',
-    'tg_bot_id': 0,
     'api_key': 0,
     'api_hash': '',
     'tg_bot_admins': [],
@@ -37,7 +36,19 @@ if exists(config_path):
 API_KEY = int(os.getenv('TELEGRAM_API_ID', CONFIG['api_key'])) if os.getenv('TELEGRAM_API_ID') else CONFIG['api_key']
 API_HASH = os.getenv('TELEGRAM_API_HASH', CONFIG['api_hash'])
 BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', CONFIG['tg_bot_token'])
-BOT_ID = CONFIG['tg_bot_id']
+
+# Extract Bot ID from token automatically
+BOT_ID = None
+if BOT_TOKEN:
+    try:
+        # Bot token format: "bot_id:auth_token"
+        BOT_ID = int(BOT_TOKEN.split(':')[0])
+    except (ValueError, IndexError):
+        print("⚠️  Warning: Could not extract Bot ID from token")
+        BOT_ID = 0
+else:
+    BOT_ID = 0
+
 TG_BOT_ADMINS = CONFIG['tg_bot_admins']
 TG_CHANNEL = CONFIG['tg_channel']
 LOCAL_STORAGE = os.getenv('LOCAL_STORAGE', CONFIG['local_storage_path'])
