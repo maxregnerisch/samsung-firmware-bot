@@ -220,6 +220,20 @@ Error: Missing required Telegram credentials!
 2. Create a bot with @BotFather on Telegram
 3. Add credentials to `config.json` or set environment variables
 
+#### ❌ Telethon Compatibility Error (Python 3.12+)
+```
+TypeError: Lock.__init__() got an unexpected keyword argument 'loop'
+```
+**Solution:**
+```bash
+# Option 1: Use the upgrade script
+python upgrade_telethon.py
+
+# Option 2: Manual upgrade
+pip uninstall Telethon -y
+pip install Telethon>=1.28.0
+```
+
 #### ❌ Import Errors
 ```
 ModuleNotFoundError: No module named 'telethon'

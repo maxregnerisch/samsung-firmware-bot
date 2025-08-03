@@ -1,8 +1,8 @@
 asyncssh
 requests
 humanize
-# Telethon Dependencies
-Telethon==1.11.3
+# Telethon Dependencies - Updated for Python 3.12 compatibility
+Telethon>=1.28.0
 cryptg
 pillow
 # aiohttp

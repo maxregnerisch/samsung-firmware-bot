@@ -1,7 +1,8 @@
-#!/usr/bin/env python3.7
+#!/usr/bin/env python3
 """ SamFirm Telegram Bot"""
 import asyncio
 import pickle
+import sys
 from os import path, remove
 
 from telethon.sync import TelegramClient
@@ -12,11 +13,30 @@ from samfirm_bot.classes.samfirm import SamFirm
 from samfirm_bot.modules import ALL_MODULES
 from samfirm_bot.utils.loader import load_modules
 
-BOT = TelegramClient('samfirm_bot', API_KEY, API_HASH).start(bot_token=BOT_TOKEN)
-BOT.parse_mode = 'markdown'
-BOT_INFO = {}
-SAM_FIRM = SamFirm(BOT.loop)
-STORAGE = LocalClient(LOCAL_STORAGE, WEB_STORAGE)
+# Initialize bot with error handling for different Python/Telethon versions
+try:
+    BOT = TelegramClient('samfirm_bot', API_KEY, API_HASH).start(bot_token=BOT_TOKEN)
+    BOT.parse_mode = 'markdown'
+    BOT_INFO = {}
+    
+    # Handle different Telethon versions for loop access
+    try:
+        # For newer Telethon versions
+        loop = asyncio.get_event_loop()
+        SAM_FIRM = SamFirm(loop)
+    except AttributeError:
+        # For older Telethon versions
+        SAM_FIRM = SamFirm(BOT.loop)
+    
+    STORAGE = LocalClient(LOCAL_STORAGE, WEB_STORAGE)
+    
+except Exception as e:
+    print(f"❌ Error initializing bot: {e}")
+    print("This might be due to:")
+    print("1. Incompatible Telethon version - try: pip install --upgrade Telethon>=1.28.0")
+    print("2. Invalid credentials in config.json")
+    print("3. Network connectivity issues")
+    sys.exit(1)
 
 
 def main():

@@ -137,10 +137,31 @@ print_status "Virtual environment activated"
 print_header "📦 Upgrading pip..."
 pip install --upgrade pip
 
+# Check Python version and handle Telethon compatibility
+print_header "🐍 Checking Python compatibility..."
+PYTHON_VERSION_MAJOR=$(python3 -c 'import sys; print(sys.version_info.major)')
+PYTHON_VERSION_MINOR=$(python3 -c 'import sys; print(sys.version_info.minor)')
+
+if [[ $PYTHON_VERSION_MAJOR -eq 3 && $PYTHON_VERSION_MINOR -ge 12 ]]; then
+    print_warning "Python 3.12+ detected - ensuring Telethon compatibility"
+    # Uninstall old Telethon first if it exists
+    pip uninstall Telethon -y 2>/dev/null || true
+fi
+
 # Install Python dependencies
 print_header "📚 Installing Python dependencies..."
 pip install -r requirements.txt
 print_status "Python dependencies installed"
+
+# Verify Telethon installation
+print_header "🔍 Verifying Telethon installation..."
+TELETHON_VERSION=$(python3 -c "import pkg_resources; print(pkg_resources.get_distribution('Telethon').version)" 2>/dev/null || echo "not found")
+if [[ "$TELETHON_VERSION" != "not found" ]]; then
+    print_status "Telethon $TELETHON_VERSION installed successfully"
+else
+    print_error "Telethon installation failed"
+    print_status "You can try running: python upgrade_telethon.py"
+fi
 
 # Create necessary directories
 print_header "📁 Creating directories..."
@@ -230,4 +251,3 @@ echo "- Create a bot with @BotFather on Telegram"
 echo "- Keep your credentials secure and never commit them to version control"
 echo ""
 print_status "Happy firmware building! 🚀"
-
